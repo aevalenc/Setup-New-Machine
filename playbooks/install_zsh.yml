@@ -1,0 +1,19 @@
+- name: Setup zsh
+  hosts: localhost
+  become: true
+  tasks:
+    - name: Update system
+      changed_when: "System up-to-date"
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Install zsh
+      changed_when: "zsh already installed"
+      ansible.builtin.apt:
+        name: zsh
+        state: present
+
+    - name: Install oh-my-zsh
+      changed_when: "oh-my-zsh already installed"
+      ansible.builtin.shell:
+        cmd: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
