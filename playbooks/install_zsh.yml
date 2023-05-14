@@ -3,12 +3,10 @@
   become: true
   tasks:
     - name: Update system
-      changed_when: "System up-to-date"
       ansible.builtin.apt:
         update_cache: true
 
     - name: Install zsh
-      changed_when: "zsh already installed"
       ansible.builtin.apt:
         name: zsh
         state: present

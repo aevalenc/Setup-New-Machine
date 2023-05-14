@@ -1,0 +1,19 @@
+- name: Setup tmux
+  hosts: localhost
+  become: true
+  tasks:
+    - name: Update system
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Install tmux
+      ansible.builtin.apt:
+        name: tmux
+        state: present
+
+    - name: Copy config file
+      changed_when: false
+      ansible.builtin.copy:
+        src: ../config_files/.tmux.conf
+        dest: "{{ lookup('env', 'HOME') }}/.tmux.conf"
+        mode: preserve
