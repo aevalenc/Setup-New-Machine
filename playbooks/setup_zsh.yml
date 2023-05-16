@@ -1,0 +1,49 @@
+- name: Setup zsh
+  hosts: localhost
+  vars:
+    home_directory: "{{ lookup('env', 'HOME') }}"
+  tasks:
+    - name: Update system
+      become: true
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Install zsh
+      become: true
+      ansible.builtin.apt:
+        name: zsh
+        state: present
+
+    - name: Check if oh-my-zsh folder exists
+      ansible.builtin.stat:
+        path: "{{ home_directory }}/.oh-my-zsh"
+      register: check_folder_name
+
+    - name: print debug
+      ansible.builtin.debug:
+        var: check_folder_name.stat.exists
+
+    - name: Create .oh-my-zsh backup copy
+      ansible.builtin.copy:
+        remote_src: true
+        src: "{{ home_directory }}/.oh-my-zsh"
+        dest: "{{ home_directory }}/.oh-my-zsh-bak"
+        mode: preserve
+      when: check_folder_name.stat.exists == true
+
+    - name: Deleting .oh-my-zsh
+      ansible.builtin.file:
+        path: "{{ home_directory }}/.oh-my-zsh"
+        state: absent
+      when: check_folder_name.stat.exists == true
+
+    - name: Changing to home directory
+      ansible.builtin.file:
+        path: "{{ home_directory }}/.oh-my-zsh"
+        state: absent
+      when: check_folder_name.stat.exists == true
+
+    - name: Install oh-my-zsh
+      when: check_folder_name.stat.exists == false
+      ansible.builtin.shell:
+        cmd: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
