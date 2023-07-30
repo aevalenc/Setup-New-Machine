@@ -1,0 +1,123 @@
+- name: Setup core packages
+  hosts: localhost
+  become: true
+  tasks:
+
+    - name: Update and upgrade apt packages
+      become: true
+      ansible.builtin.apt:
+        upgrade: true
+        update_cache: true
+
+    - name: Install System Packages
+      become: true
+      ansible.builtin.apt:
+        name:
+          - autoconf
+          - automake
+          - apt-transport-https
+          - build-essential
+          - clang-format
+          - cmake
+          - curl
+          - gettext
+          - gimp
+          - git
+          - gitlint
+          - global
+          - htop
+          - libfreetype6-dev
+          - libfontconfig1-dev
+          - libxft-dev
+          - libx11-dev
+          - libxcb-xfixes0-dev
+          - libxcomposite-dev
+          - libxkbcommon-dev
+          - libtool
+          - libtool-bin
+          - libxinerama-dev
+          - lua5.1
+          - nload
+          - nvidia-settings
+          - pandoc
+          - python3-pip
+          - software-properties-common
+          - stow
+          - terminator
+          - unzip
+          - vlc
+          - wget
+          - xclip
+          - xournal
+
+    - name: Yaml linters
+      become: true
+      ansible.builtin.apt:
+        name: ["yamllint", "ansible-lint"]
+
+    - name: Install Clang, GCC, Boost
+      become: true
+      ansible.builtin.apt:
+        name:
+          - clang
+          - clang-11
+          - clang-12
+          - clangd
+          - gcc
+          - g++
+          - libboost-all-dev
+
+    - name: Java Development Kit
+      become: true
+      ansible.builtin.apt:
+        name: ["default-jdk"]
+
+    - name: Install zsh deps
+      become: true
+      ansible.builtin.apt:
+        name: ["jq", "bc"]
+
+    - name: Symbolic link from python3 to python
+      become: true
+      ansible.builtin.file:
+        src: "/usr/bin/python3"
+        dest: "/usr/bin/python"
+        state: link
+
+    - name: Add Chrome APT key
+      ansible.builtin.apt_key:
+        url: https://dl.google.com/linux/linux_signing_key.pub
+        state: present
+
+    - name: Add chrome repository into sources list
+      ansible.builtin.apt_repository:
+        repo: deb http://dl.google.com/linux/chrome/deb/ stable main
+        state: present
+        filename: google-chrome
+
+    - name: Install Chrome
+      ansible.builtin.apt:
+        name: "google-chrome-stable"
+        state: present
+        update_cache: true
+
+    - name: Add LLVM APT key
+      ansible.builtin.apt_key:
+        url: https://apt.llvm.org/llvm-snapshot.gpg.key
+        state: present
+
+    - name: Add llvm-toolchain-focal-15 repository into sources list
+      ansible.builtin.apt_repository:
+        repo: deb http://apt.llvm.org/focal/ llvm-toolchain-focal-15 main
+        state: present
+
+    - name: Install clang-format-15 (For BMW repo)
+      ansible.builtin.apt:
+        name: "clang-format-15"
+        state: present
+        update_cache: true
+
+    - name: Install vs-code
+      become: true
+      ansible.builtin.apt:
+        deb: https://go.microsoft.com/fwlink/?LinkID=760868

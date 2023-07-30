@@ -1,0 +1,7 @@
+ubuntu:
+  hosts:
+    localhost:
+      ansible_connection: local
+      home_directory: "{{ lookup('env', 'HOME') }}"
+      user: "{{ lookup('env', 'USER') }}"
+      repo_directory: "{{ home_directory }}/Downloads/Setup-New-Machine"

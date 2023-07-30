@@ -1,0 +1,76 @@
+- name: Setup Bazel
+  hosts: localhost
+  vars:
+    # home_directory: "{{ lookup('env', 'HOME') }}"
+    # user: "{{ lookup('env', 'USER') }}"
+    npm_package: "npm"
+    nodejs_pkg: "nodejs"
+  tasks:
+
+    - name: Gather the package facts
+      ansible.builtin.package_facts:
+        manager: auto
+
+    - name: Install nodejs and npm
+      when: not nodejs_pkg in ansible_facts.packages
+      become: true
+      ansible.builtin.apt:
+        name:
+          - nodejs
+          - npm
+        state: present
+
+    - name: Check for bazelisk
+      ansible.builtin.stat:
+        path: "/usr/bin/bazelisk"
+      register: bazelisk_status
+
+    # - name: print debug
+    #   ansible.builtin.debug:
+    #     var: bazelisk_status
+
+    - name: Install Bazelisk
+      when: not bazelisk_status.stat.exists
+      become: true
+      community.general.npm:
+        name: "@bazel/bazelisk"
+        path: "/usr/bin/bazelisk"
+
+    - name: Link Bazelisk to Bazel
+      when: not bazelisk_status.stat.exists
+      become: true
+      ansible.builtin.file:
+        src: "/usr/bin/bazelisk"
+        dest: "/usr/bin/bazel"
+        mode: a+x
+        state: link
+
+    - name: Run Bazelisk to extract current version of Bazel
+      when: not bazelisk_status.stat.exists
+      become: true
+      ansible.builtin.command:
+        cmd: "bazel"
+
+    - name: Check for buildifier
+      ansible.builtin.stat:
+        path: "/usr/local/bin/buildifier"
+      register: buildifier_status
+
+    - name: Install buildifier
+      when: not buildifier_status.stat.exists
+      become: true
+      vars:
+        version: "v6.1.2"
+      ansible.builtin.get_url:
+        url: "https://github.com/bazelbuild/buildtools/releases/download/{{ version }}/buildifier-linux-amd64"
+        dest: "/usr/local/bin/buildifier-linux-amd64"
+        mode: a+x
+
+    - name: Make buildifier executable
+      when: not buildifier_status.stat.exists
+      become: true
+      ansible.builtin.file:
+        src: "/usr/local/bin/buildifier-linux-amd64"
+        dest: "/usr/local/bin/buildifier"
+        mode: a+x
+        state: link

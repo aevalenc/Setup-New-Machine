@@ -1,0 +1,59 @@
+- name: Setup powerline
+  hosts: localhost
+  vars:
+    # home_directory: "{{ lookup('env', 'HOME') }}"
+    # repo_directory: "{{ home_directory }}/Documents/Ansible/Setup-New-Machine"
+  tasks:
+    - name: Update system
+      become: true
+      ignore_errors: true
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Install recommended font
+      become: true
+      ansible.builtin.copy:
+        remote_src: true
+        src: "{{ repo_directory }}/config_files/fonts/"
+        dest: "/usr/local/share/fonts"
+        mode: preserve
+
+    - name: Check if powerline10k folder exists
+      ansible.builtin.stat:
+        path: "{{ home_directory }}/powerline10k"
+      register: check_folder_name
+
+    # - name: print debug
+    #   ansible.builtin.debug:
+    #     var: check_folder_name
+
+    - name: Create powerline10k backup copy
+      ansible.builtin.copy:
+        remote_src: true
+        src: "{{ home_directory }}/powerline10k"
+        dest: "{{ home_directory }}/powerline10k-bak"
+        mode: preserve
+      when: check_folder_name.stat.exists
+
+    - name: Deleting powerline10k
+      ansible.builtin.file:
+        path: "{{ home_directory }}/powerline10k"
+        state: absent
+      when: check_folder_name.stat.exists
+
+    - name: Clone powerline10k repository
+      ansible.builtin.git:
+        repo: https://github.com/romkatv/powerlevel10k.git
+        dest: "{{ home_directory }}/powerline10k"
+        depth: 1
+        clone: true
+        update: true
+        version: master
+      when: not check_folder_name.stat.exists
+
+    - name: Source in zsh
+      vars:
+        source_msg: "source ~/powerline10k/powerlevel10k.zsh-theme"
+      ansible.builtin.shell:
+        cmd: echo "{{ source_msg }}" >> "{{ home_directory }}/.zshrc"
+      when: not check_folder_name.stat.exists
