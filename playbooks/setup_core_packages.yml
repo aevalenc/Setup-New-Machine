@@ -111,7 +111,7 @@
         repo: deb http://apt.llvm.org/focal/ llvm-toolchain-focal-15 main
         state: present
 
-    - name: Install clang-format-15 (For BMW repo)
+    - name: Install clang-format-15
       ansible.builtin.apt:
         name: "clang-format-15"
         state: present
