@@ -1,19 +1,27 @@
 - name: Setup tmux
   hosts: localhost
-  become: true
+  # home_directory: "{{ lookup('env', 'HOME') }}"
   tasks:
     - name: Update system
+      become: true
       ansible.builtin.apt:
         update_cache: true
 
     - name: Install tmux
+      become: true
       ansible.builtin.apt:
         name: tmux
         state: present
 
     - name: Copy config file
-      changed_when: false
       ansible.builtin.copy:
         src: ../config_files/.tmux.conf
         dest: "{{ lookup('env', 'HOME') }}/.tmux.conf"
         mode: preserve
+
+    - name: Clone tpm
+      ansible.builtin.git:
+        repo: https://github.com/tmux-plugins/tpm.git
+        dest: "{{ home_directory }}/.tmux/plugins/tpm"
+        version: master
+        clone: true
